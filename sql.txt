@@ -1,0 +1,273 @@
+ALTER TABLE `ordermaster`
+	ADD COLUMN `chargetaxamt` INT NULL AFTER `totalcharges`;
+
+not rolledout
+----------------------------
+INSERT INTO `apiconfiguration` (`id`, `api`, `url`) VALUES(44, 'applyoffercoupancode', 'http://devhiplapi.billberrypos.com/public/api/v1/pos/applyoffercouponcode');
+
+INSERT INTO `havmor`.`apiconfiguration` (`id`, `api`, `url`) VALUES (45, 'checkandupdatecoupancode', 'http://devhiplapi.billberrypos.com/public/api/v1/pos/checkapplyoffercouponcodeisuse');
+
+INSERT INTO `havmor`.`apiconfiguration` (`id`, `api`, `url`) VALUES (46, 'applymultistoreofferdiscount', 'http://devhiplapi.billberrypos.com/public/api/v1/pos/applyofferdiscount');
+
+
+ALTER TABLE `ordermaster` ADD COLUMN `promocode` VARCHAR(50) NULL DEFAULT NULL AFTER `status`;
+	
+ALTER TABLE `offermaster` ADD COLUMN `coupontype` TINYINT(1) NULL DEFAULT NULL COMMENT '1 = same coupon, 0 = different coupon for each user' AFTER `iscouponrequired`;
+
+ALTER TABLE `offermaster` ADD COLUMN `enableapplicablehidepos` TINYINT(1) NULL DEFAULT NULL AFTER `price`;
+
+
+CREATE TABLE IF NOT EXISTS `whatsappdetailsmaster` (
+  `whatsappdetailsid` int NOT NULL AUTO_INCREMENT,
+  `whatsappcount` int DEFAULT NULL,
+  `whatsapptype` varchar(50) DEFAULT NULL,
+  `request` varchar(455) DEFAULT NULL,
+  `response` varchar(455) DEFAULT NULL,
+  `mobileno` varchar(50) DEFAULT NULL,
+  `vendername` varchar(100) DEFAULT NULL,
+  `createdby` int DEFAULT NULL,
+  `createddate` datetime DEFAULT NULL,
+  `modifiedby` int DEFAULT NULL,
+  `modifieddate` datetime DEFAULT NULL,
+  `isdeleted` tinyint DEFAULT '0',
+  `companyid` int DEFAULT NULL,
+  `locationid` int DEFAULT NULL,
+  `datekey` int DEFAULT NULL,
+  `uniquekey` varchar(255) DEFAULT NULL,
+  `posid` int DEFAULT NULL,
+  PRIMARY KEY (`whatsappdetailsid`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+v1.2.9
+----------------------------
+DELETE FROM customermaster  WHERE phoneno REGEXP '^[0-5]';
+CREATE TABLE IF NOT EXISTS `phonepereqres` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `orderid` int DEFAULT NULL,
+  `uniquekey` bigint DEFAULT NULL,
+  `transactionid` varchar(50) CHARACTER SET latin1 COLLATE latin1_swedish_ci DEFAULT NULL,
+  `merchantid` varchar(50) CHARACTER SET latin1 COLLATE latin1_swedish_ci DEFAULT NULL,
+  `res` text CHARACTER SET latin1 COLLATE latin1_swedish_ci,
+  `locationid` int DEFAULT NULL,
+  `createdby` int DEFAULT NULL,
+  `createddate` datetime NOT NULL DEFAULT (now()),
+  `modifieddate` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `isdeleted` tinyint(1) DEFAULT '0',
+  `status` tinyint DEFAULT '0',
+  `transactiontype` tinyint(1) DEFAULT '1' COMMENT '1 for payment and 2 for refund',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+v1.2.3
+----------------------------
+ALTER TABLE `onlineorderdetails`	ADD INDEX `upid` (`upid`);
+DELETE t1 from onlineorderdetails t1 JOIN onlineorderdetails t2 WHERE t1.id<t2.id AND t1.upid=t2.upid;
+ALTER TABLE `onlineorderdetails`	DROP INDEX `upid`;
+ALTER TABLE `onlineorderdetails`	ADD UNIQUE INDEX `upid` (`upid`);
+v1.2.1
+----------------------------
+UPDATE apiconfiguration SET `executetime`='1' WHERE api='shiftdata';
+UPDATE apiconfiguration SET `executetime`='1' WHERE api='settlementdata';
+
+v1.2.0
+----------------------------
+UPDATE apiconfiguration SET url='http://65.2.66.173:3006' WHERE api='socketurl';
+
+UPDATE `havmor`.`templatemaster` SET `templatename`='Bill Of Supply', `templateimgpath`='billlayout-2.jpg' WHERE  `templateid`=5;
+
+v1.1.6
+----------------------------
+ALTER TABLE `shiftmaster`
+	ADD COLUMN `cashsales` DECIMAL(18,5) NULL DEFAULT NULL AFTER `openingbalance`,
+	ADD COLUMN `cashexpense` DECIMAL(18,5) NULL DEFAULT NULL AFTER `totalpaymentamount`,
+	ADD COLUMN `cashrecharge` DECIMAL(18,5) NULL DEFAULT NULL AFTER `cashexpense`;
+	
+ALTER TABLE `shiftmaster`
+	ADD COLUMN `bankdeposit` DECIMAL(18,5) NULL DEFAULT NULL AFTER `cashexpense`;
+	
+v1.1.5
+----------------------------
+ALTER TABLE `ordermaster`
+	ADD COLUMN `shiftuniquekey` BIGINT NULL DEFAULT NULL AFTER `isbos`;
+ALTER TABLE `shiftmaster`
+	ADD COLUMN `cashsheet` LONGBLOB NULL AFTER `cancelledbills`,
+	ADD COLUMN `shiftreport` LONGBLOB NULL AFTER `cashsheet`;
+ALTER TABLE `bankdepositdetails`
+	ADD COLUMN `shiftuniquekey` BIGINT NULL DEFAULT NULL AFTER `depositshift`;
+
+ALTER TABLE `offerproductdiscount`
+	ADD INDEX `offerproductid` (`offerproductid`);
+v1.1.0
+----------------------------
+ALTER TABLE `ordermaster`
+	ADD COLUMN `aggregatorid` VARCHAR(50) NULL DEFAULT NULL AFTER `onlineorderid`;
+v1.0.9
+----------------------------
+UPDATE apiconfiguration SET executetime=1 WHERE api='customerdata';
+
+v1.0.8
+----------------------------
+ALTER TABLE `offermaster` ADD COLUMN `minordvalapplicableon` TINYINT(1) NULL DEFAULT '1' AFTER `offermode`;
+
+ALTER TABLE `menuproductmodifiers` ADD INDEX `mpmid` (`mpmid`);
+
+
+v1.0.5
+----------------------------
+UPDATE customermaster cm SET cm.isactive=1 ;
+
+TRUNCATE TABLE apiconfiguration;
+
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('posvalidate', 'http://hiplapi.billberrypos.com/public/posvalidate', NULL);
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('bulkorders', 'http://hiplapi.billberrypos.com/public/api/v1/pos/bulkorders', '5');
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('registerpos', 'http://hiplapi.billberrypos.com/public/registerpos', NULL);
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('masterdata', 'http://hiplapi.billberrypos.com/public/api/v1/pos/masterdata', NULL);
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('pushorders', 'http://hiplapi.billberrypos.com/public/api/v1/pos/pushorders', NULL);
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('verificationResponse', 'http://hiplapi.billberrypos.com/public/verificationResponse', NULL);
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('expensedata', 'http://hiplapi.billberrypos.com/public/api/v1/pos/expensedata', '15');
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('shiftdata', 'http://hiplapi.billberrypos.com/public/api/v1/pos/shiftdata', '59');
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('customerdata', 'http://hiplapi.billberrypos.com/public/api/v1/pos/customerdata', '45');
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('customerdetails', 'http://hiplapi.billberrypos.com/public/api/v1/pos/customerdetails', '50');
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('settlementdata', 'http://hiplapi.billberrypos.com/public/api/v1/pos/settlementdata', '59');
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('physicalstock', 'http://hiplapi.billberrypos.com/public/api/v1/pos/physicalstock', '10');
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('onlineorder-orderstatus', 'http://hiplapi.billberrypos.com/public/api/v1/onlineorder/orderstatus', NULL);
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('onlineorder-getundeliveredorder', 'http://hiplapi.billberrypos.com/public/api/v1/onlineorder/getundeliveredorder', NULL);
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('onlineorder-orderdelivered', 'http://hiplapi.billberrypos.com/public/api/v1/onlineorder/orderdelivered', NULL);
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('socketurl', 'http://hiplonlineorder.billberrypos.com', NULL);
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('urbanpiper', 'https://staging.urbanpiper.com/', NULL);
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('earnreward', 'http://hiplapi.billberrypos.com/public/api/v1/rewards/earnreward', NULL);
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('redeemreward', 'http://hiplapi.billberrypos.com/public/api/v1/rewards/redeemreward', NULL);
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('getrewardpoint', 'http://hiplapi.billberrypos.com/public/api/v1/rewards/getreward', NULL);
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('getrewardbalance', 'http://hiplapi.billberrypos.com/public/api/v1/rewards/getbalance', NULL);
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('getoffers', 'http://hiplapi.billberrypos.com/public/api/v1/pos/offers', NULL);
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('syncorders', 'http://hiplsyncapi.billberrypos.com/order/add', '1');
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('saveupdatelogs', 'http://hiplapi.billberrypos.com/public/api/v1/pos/saveupdatelogs', NULL);
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('getuporders', 'http://hiplsyncapi.billberrypos.com/urbanpiper/getorders', NULL);
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('setupasdelivered', 'http://hiplsyncapi.billberrypos.com/urbanpiper/setasdelivered', NULL);
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('getuporderstatus', 'http://hiplsyncapi.billberrypos.com/urbanpiper/getorderstatus', NULL);
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('getuporderriderstatus', 'http://hiplsyncapi.billberrypos.com/urbanpiper/getorderriderstatus', NULL);
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('internalsocket', 'http://localhost:3333', NULL);
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('externalorder-statusupdate', 'https://app.mfwfoods.com/webhook/posorderupdates.aspx', NULL);
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('bankdepositacknowledge', 'http://hiplapi.billberrypos.com/public/api/v1/pos/bankdepositacknowledge', NULL);
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('savebankdeposit', 'http://hiplapi.billberrypos.com/public/api/v1/pos/savebankdepositdetails', NULL);
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('getbankdetails', 'http://hiplapi.billberrypos.com/public/api/v1/pos/bankdetails', NULL);
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('generateeinvirn', 'http://gstsandbox.charteredinfo.com/eicore/dec/v1.03/Invoice', NULL);
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('checkitemstock', 'http://hiplapi.billberrypos.com/public/api/v1/stock/checkitemstock', NULL);
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('incdecstock', 'http://hiplapi.billberrypos.com/public/api/v1/stock/saveorder', NULL);
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('getpaymentqr', 'https://api.razorpay.com/v1/payments/qr_codes', NULL);
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('upposackstatus', 'http://hiplsyncapi.billberrypos.com/urbanpiper/posackstatus', NULL);
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('ebill', 'http://hipl.billberrypos.com/ebill.php', NULL);
+INSERT INTO `apiconfiguration` (`api`, `url`, `executetime`) VALUES ('feedback', 'https://hipl.billberrypos.com/feedback/feedback.php', NULL);
+
+v1.0.4
+----------------------------
+
+CREATE TABLE IF NOT EXISTS `broadcastmsglocation` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `mappingid` int(11) NOT NULL DEFAULT 0,
+  `promotionalid` int(10) unsigned DEFAULT NULL,
+  `locationid` int(10) unsigned NOT NULL,
+  `createddate` date NOT NULL,
+  `createdby` int(10) unsigned NOT NULL,
+  `modifiedby` int(11) DEFAULT NULL,
+  `modifieddate` date DEFAULT NULL,
+  `ipaddress` varchar(50) NOT NULL DEFAULT '',
+  `isdeleted` tinyint(4) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `mappingid` (`mappingid`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE IF NOT EXISTS `promotionaloffers` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `promotionalid` int(11) DEFAULT NULL,
+  `title` varchar(255) DEFAULT NULL,
+  `startdate` date DEFAULT NULL,
+  `enddate` date DEFAULT NULL,
+  `isactive` tinyint(4) DEFAULT NULL,
+  `createddate` datetime DEFAULT NULL,
+  `createdby` int(11) DEFAULT NULL,
+  `modifieddate` datetime DEFAULT NULL,
+  `modifiedby` int(11) DEFAULT NULL,
+  `isdeleted` tinyint(4) NOT NULL DEFAULT 0,
+  `ipaddress` varchar(50) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `promotionalid` (`promotionalid`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+ALTER TABLE `customermaster`
+	CHANGE COLUMN `isactive` `isactive` TINYINT(1) NULL DEFAULT '1' AFTER `custmoercode`;
+	
+DROP PROCEDURE IF EXISTS `deleteorder`;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `deleteorder`(
+	IN `parorderid` int,
+	IN `parmodifiedby` int
+)
+LANGUAGE SQL
+NOT DETERMINISTIC
+CONTAINS SQL
+SQL SECURITY DEFINER
+COMMENT ''
+BEGIN 
+	CREATE TEMPORARY TABLE temppayment
+	SELECT OM.orderid,SM.shiftid,sum(PTM.CreditAmount) AS creditamount,SUM((case when PTM.paymodeid=1 then ifnull(PTM.creditamount,0.00) ELSE 0 END)) AS cashamount
+	from ordermaster OM
+	JOIN paymentmaster PM ON OM.orderid=PM.orderid AND OM.isdeleted=0 AND PM.isdeleted=0
+	JOIN paymenttransactionmaster PTM ON PM.paymentid=PTM.paymentid AND PTM.isdeleted=0
+	JOIN shiftmaster SM ON OM.shiftid=SM.shiftid
+	WHERE OM.orderid=parorderid
+	ORDER BY OM.orderid,SM.shiftid;
+	
+	UPDATE shiftmaster sm
+	JOIN temppayment tp ON sm.shiftid=tp.shiftid
+	SET SM.totalpaymentamount=(ifnull(SM.totalpaymentamount,0.00)-IFNULL(tp.creditamount,0.00)),
+	SM.closingbalance=(ifnull(SM.closingbalance,0.00)-IFNULL(tp.cashamount,0.00));
+	
+	DROP TABLE temppayment;
+	
+	update customermaster cm
+	JOIN ordermaster OM ON cm.customerid=OM.customerid
+    join paymentmaster pm on pm.orderid=om.orderid and pm.isdeleted=0
+    join paymenttransactionmaster ptm on ptm.paymentid=ptm.paymentid and ptm.isdeleted=0 and ptm.paymodeid=9
+	SET cm.outstandingamt=(IFNULL(cm.outstandingamt,0.00)-IFNULL(om.grandtotal,0.00))
+	WHERE OM.orderid=parorderid and om.isdeleted=0;
+    
+	INSERT INTO customeraccountdetails (customerid, creditamount, balance, paymentdate,datekey,createdby,createddate,description,locationid,paymodeid,companyid) SELECT om.customerid,grandtotal,outstandingamt,now(),date_format(now(),'%Y%m%d'),parmodifiedby,now(),concat(billno,' is cancelled'),om.locationid,0,om.companyid FROM ordermaster om 
+	join paymentmaster pm on pm.orderid=om.orderid and pm.isdeleted=0 and om.orderid=parorderid and om.isdeleted=0
+	join paymenttransactionmaster ptm on ptm.paymentid=pm.paymentid and ptm.isdeleted=0 and ptm.paymodeid=9
+	join customermaster cm on cm.customerid=om.customerid and cm.isdeleted=0;
+	
+    
+	update ordermaster OM
+	JOIN orderproductdetails OPD ON OM.orderid=OPD.orderid
+	join orderproducttaxdetails OPT ON OPD.orderproductid=OPT.orderproductid
+	join paymentmaster PM ON OM.orderid=PM.orderid
+	join paymenttransactionmaster PTM ON PM.paymentid=PTM.paymentid
+	join ticketmaster TM ON OPD.ticketid=TM.ticketid
+	SET OM.isdeleted=1,OM.issync=0,OM.modifiedby=parmodifiedby,OM.modifieddate=now(),
+	OPD.isdeleted=1,OPD.modifiedby=parmodifiedby,OPD.modifieddate=now(),
+	OPT.isdeleted=1,OPT.modifiedby=parmodifiedby,OPT.modifieddate=now(),
+	PM.isdeleted=1,PM.modifiedby=parmodifiedby,PM.modifieddate=now(),
+	PTM.isdeleted=1,PTM.modifiedby=parmodifiedby,PTM.modifieddate=now(),
+	TM.isdeleted=1,TM.modifiedby=parmodifiedby,TM.modifieddate=now()
+	WHERE OM.orderid=parorderid;
+	
+	update ordermaster OM
+	JOIN orderproductdetails OPD ON OM.orderid=OPD.orderid
+	join orderproductmodifiers OPM ON OPD.orderproductid=OPM.orderproductdetailsid
+	SET OPM.isdeleted=1,OPM.modifiedby=parmodifiedby,OPM.modifieddate=now()
+	WHERE OM.orderid=parorderid;
+END;
+
+INSERT INTO `lastsyncdates` (`tablename`, `lastsyncdate`) VALUES ('broadcastmessage', '0000-00-00 00:00:00');
+INSERT INTO `lastsyncdates` (`tablename`, `lastsyncdate`) VALUES ('broadcastlocation', '0000-00-00 00:00:00');
+
+
+v1.0.1
+----------------------------
+UPDATE `havmor`.`templatemaster` SET `isdeleted`='1' WHERE  `templateid`=7;
+UPDATE `havmor`.`templatemaster` SET `isdeleted`='1' WHERE  `templateid`=14;
+
+v.1.0.2
+----------------------------
+INSERT INTO `havmor`.`apiconfiguration` (`api`, `url`) VALUES ('upposackstatus', 'http://devhiplsyncapi.billberrypos.com/urbanpiper/posackstatus');
+INSERT INTO `havmor`.`apiconfiguration` (`api`, `url`) VALUES ('ebill', 'http://devhipl.billberrypos.com/ebill.php');
+INSERT INTO `havmor`.`apiconfiguration` (`api`, `url`) VALUES ('feedback', 'https://devhipl.billberrypos.com/feedback/feedback.php');

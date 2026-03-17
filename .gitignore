@@ -1,0 +1,6 @@
+app
+dist
+mysql
+.vscode
+package-lock.json
+node_modules

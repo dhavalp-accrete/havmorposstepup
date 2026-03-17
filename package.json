@@ -1,0 +1,107 @@
+{
+  "name": "havmor",
+  "version": "1.5.0",
+  "description": "point of sale",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --win --ia32",
+    "install": "electron-rebuild"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@hapi/joi": "^16.1.8",
+    "app-root-path": "^3.0.0",
+    "body-parser": "^1.18.3",
+    "bufferutil": "^4.0.1",
+    "electron-log": "^3.0.9",
+    "electron-unhandled": "^3.0.2",
+    "electron-updater": "^4.2.0",
+    "express": "^4.17.1",
+    "express-handlebars": "^3.1.0",
+    "express-mysql-session": "^2.1.6",
+    "express-session": "^1.17.0",
+    "getmac": "^1.5.0",
+    "helmet": "^3.21.2",
+    "html-entities": "^1.2.1",
+    "http-server": "^0.12.3",
+    "is-online": "^9.0.1",
+    "md5": "^2.2.1",
+    "moment": "^2.24.0",
+    "morgan": "^1.9.1",
+    "multer": "^1.4.2",
+    "mysql": "^2.18.1",
+    "node-cron": "^2.0.3",
+    "node-fetch": "^2.6.1",
+    "qrcode": "^1.5.4",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.5",
+    "serialport": "^9.2.8",
+    "socket.io": "^2.4.1",
+    "tinyurl": "^1.1.7",
+    "utf-8-validate": "^5.0.2",
+    "winston": "^3.2.1",
+    "winston-daily-rotate-file": "^4.4.2"
+  },
+  "devDependencies": {
+    "cross-env": "^6.0.3",
+    "electron": "^19.1.9",
+    "electron-builder": "^23.6.0",
+    "electron-rebuild": "^3.2.9"
+  },
+  "build": {
+    "publish": [
+      {
+        "provider": "generic",
+        "url": "http://devhipl.billberrypos.com/possetup/"
+      }
+    ],
+    "appId": "com.accrete.billberry.app",
+    "files": [
+      "**/*",
+      "build/icon.*"
+    ],
+    "mac": {
+      "category": "pointofsale",
+      "target": [
+        "zip",
+        "dmg"
+      ]
+    },
+    "win": {
+      "extraResources": [
+        "./db.sql",
+        "./dbchanges.txt",
+        {
+          "from": "config/config.json",
+          "to": "config/config.json",
+          "filter": [
+            "**/*"
+          ]
+        },
+        {
+          "from": "resources/lib",
+          "to": "lib",
+          "filter": [
+            "**/*"
+          ]
+        }
+      ],
+      "signingHashAlgorithms": [
+        "sha256"
+      ],
+      "sign": "./sign.js",
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "include": "build/installer.nsh",
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

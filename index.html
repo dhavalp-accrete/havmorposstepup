@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html style="margin:0;padding:0">
+  <head>
+    <meta charset="UTF-8">
+    <title></title>
+	<style>.indicator {
+    position: fixed;
+	flex-flow:column;
+    left: 50%;
+    right: 0;
+    background: rgba(115, 115, 115, 0.32);
+    top: 50%;
+    transform: translate(-50%, -50%);
+    height: 100%;
+    width: 100%;
+    z-index: 99;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 2em;
+}
+.indicator img{width:150px}
+#messages {
+    color: #07146b;
+	font-family:sans-serif
+}
+</style>
+  </head>
+  <body style="margin:0;padding:0">
+	<!-- Current version: <span id="version">vX.Y.Z</span> -->
+
+    <div class="indicator" style="display:none"><img src="assets/images/Billberry-loadding.gif"><div id="messages"></div></div>
+	
+	<webview src="http://localhost:8888" preload="app/public/js/webview-preload.js" style="height:100vh"></webview>
+    
+    
+  </body>
+  
+</html>
+<script>
+// Display the current version
+	let version = window.location.hash.substring(1);
+	document.querySelector('title').innerText = 'Billberry '+version;
+	const indicator = document.querySelector('.indicator');	
+  onload = () => {
+    const webview = document.querySelector('webview');
+        
+    const loadstart = () => {
+	  	indicator.style="display:flex";
+	   	var container = document.getElementById('messages');
+			container.innerHTML = '';
+  	}
+    const loadstop = () => {
+	  	indicator.style="display:none";
+	  
+	  //document.addEventListener('focus', () => webview.focus())
+	  //webview.focus();
+    }
+    webview.addEventListener('did-start-loading', loadstart);
+    webview.addEventListener('did-stop-loading', loadstop);
+	
+  }
+
+ 
+	// In embedder page.
+	const webview = document.querySelector('webview');
+	
+	webview.addEventListener('ipc-message', async (event) => {
+		console.log(event.channel)
+		if (event.channel === 'webview-message') {
+			const message = event.args[0];
+			console.log('Webview says:', message);
+
+			if (message == 'getPrinters') {
+				const printers = await window.electronAPI.getPrinters();
+				webview.send('printers-list',printers)
+			}
+
+			if (message.url) {
+				// Forward it to main process
+				window.electronAPI.openNewWindow(message.url);
+			}
+
+
+		}
+	});
+
+	webview.addEventListener("dom-ready", function () {
+		//webview.openDevTools();	  
+		window.blur();
+		window.focus();
+		webview.focus();
+
+	});
+
+</script>
+
