@@ -1,8 +1,70 @@
-insert into appupdatelogs(posid,locationid,companyid,version,updatetime) select posid,locationid,companyid,'1.5.0',now() from posmaster where isdeleted=0;
+INSERT INTO appupdatelogs(posid,locationid,companyid,version,updatetime) SELECT posid,locationid,companyid,'1.5.2',now() from posmaster WHERE isdeleted=0;
 
-insert into appupdatelogs(posid,locationid,companyid,version,updatetime) select posid,locationid,companyid,'1.4.9',now() from posmaster where isdeleted=0;
+INSERT INTO appupdatelogs(posid,locationid,companyid,version,updatetime) SELECT posid,locationid,companyid,'1.5.1',now() from posmaster WHERE isdeleted=0;
 
-insert into appupdatelogs(posid,locationid,companyid,version,updatetime) select posid,locationid,companyid,'1.4.8',now() from posmaster where isdeleted=0;
+INSERT INTO appupdatelogs(posid,locationid,companyid,version,updatetime) SELECT posid,locationid,companyid,'1.5.0',now() from posmaster WHERE isdeleted=0;
+
+INSERT INTO appupdatelogs(posid,locationid,companyid,version,updatetime) SELECT posid,locationid,companyid,'1.4.9',now() from posmaster WHERE isdeleted=0;
+
+INSERT INTO appupdatelogs(posid,locationid,companyid,version,updatetime) SELECT posid,locationid,companyid,'1.4.8',now() from posmaster WHERE isdeleted=0;
+
+DROP FUNCTION IF EXISTS isFieldExisting;
+DROP PROCEDURE IF EXISTS addFieldIfNotExists;
+
+CREATE DEFINER=`root`@`localhost` FUNCTION `isFieldExisting`(
+	`table_name_IN` VARCHAR(100),
+	`field_name_IN` VARCHAR(100)
+)
+RETURNS int
+DETERMINISTIC
+READS SQL DATA
+COMMENT ''
+RETURN (
+
+    SELECT COUNT(COLUMN_NAME) 
+
+    FROM INFORMATION_SCHEMA.columns 
+
+    WHERE TABLE_SCHEMA = DATABASE() 
+
+    AND TABLE_NAME = table_name_IN 
+
+    AND COLUMN_NAME = field_name_IN
+
+);
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `addFieldIfNotExists`(
+	IN `table_name_IN` VARCHAR(100),
+	IN `field_name_IN` VARCHAR(100),
+	IN `field_definition_IN` VARCHAR(100)
+)
+LANGUAGE SQL
+NOT DETERMINISTIC
+CONTAINS SQL
+SQL SECURITY DEFINER
+COMMENT ''
+BEGIN SET @isFieldThere = isFieldExisting(table_name_IN, field_name_IN);
+
+    IF (@isFieldThere = 0) THEN SET @ddl = CONCAT('ALTER TABLE ', table_name_IN);
+
+        SET @ddl = CONCAT(@ddl, ' ', 'ADD COLUMN') ;
+
+        SET @ddl = CONCAT(@ddl, ' ', field_name_IN);
+
+        SET @ddl = CONCAT(@ddl, ' ', field_definition_IN);
+
+
+        PREPARE stmt FROM @ddl;
+
+        EXECUTE stmt;
+
+        DEALLOCATE PREPARE stmt;
+
+
+    END IF;
+
+
+END;
 
 DROP PROCEDURE IF EXISTS generate_dim_date;
 
@@ -103,10 +165,28 @@ insert into appupdatelogs(posid,locationid,companyid,version,updatetime) select 
 
 insert into appupdatelogs(posid,locationid,companyid,version,updatetime) select posid,locationid,companyid,'1.4.4',now() from posmaster where isdeleted=0;
 
-ALTER TABLE `phonepereqres`
-	ADD COLUMN `header` TEXT NULL DEFAULT NULL,
-	ADD COLUMN `req` TEXT NULL DEFAULT NULL;
-	
-ALTER TABLE `phonepereqres` ADD COLUMN `txnamount` DECIMAL(18,5) NULL DEFAULT NULL;
+CALL addFieldIfNotExists(
+    'phonepereqres',
+    'header',
+    'TEXT NULL DEFAULT NULL'
+);
+ 
+CALL addFieldIfNotExists(
+    'phonepereqres',
+    'req',
+    'TEXT NULL DEFAULT NULL'
+);
 
 insert into appupdatelogs(posid,locationid,companyid,version,updatetime) select posid,locationid,companyid,'1.4.3',now() from posmaster where isdeleted=0;
+
+UPDATE apiconfiguration 
+SET url = REPLACE(url, 'http://hiplapi.billberrypos.com/public', 'https://hiplapi.billberrypos.com/public')
+WHERE url LIKE 'http://hiplapi.billberrypos.com/public%';
+
+UPDATE apiconfiguration
+SET url = REPLACE(url, 'http://hiplsyncapi.billberrypos.com', 'https://hiplsyncapi.billberrypos.com')
+WHERE url LIKE 'http://hiplsyncapi.billberrypos.com%';
+ 
+UPDATE apiconfiguration 
+SET url = REPLACE(url, 'http://hipl.billberrypos.com', 'https://hipl.billberrypos.com')
+WHERE url LIKE 'http://hipl.billberrypos.com%';

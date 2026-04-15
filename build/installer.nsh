@@ -1,9 +1,29 @@
 # Included files
 !include LogicLib.nsh
+
+# --- Logging helpers --------------------------------------------------------
+# Writes a single line to the installer details window AND appends it to a
+# persistent log file at $INSTDIR\install.log so it survives after the
+# installer closes. Read the log later from C:\Program Files (x86)\havmor\install.log
+!macro Log msg
+	DetailPrint "${msg}"
+	Push $9
+	ClearErrors
+	FileOpen $9 "$INSTDIR\install.log" a
+	${IfNot} ${Errors}
+		FileSeek $9 0 END
+		FileWrite $9 "${msg}$\r$\n"
+		FileClose $9
+	${EndIf}
+	Pop $9
+!macroend
+!define Log "!insertmacro Log"
+# ---------------------------------------------------------------------------
+
 Section # call UserInfo plugin to get user info.  The plugin puts the result in the stack
-   
-	
-	
+
+
+
 SectionEnd
 
 !macro customInstall
@@ -48,6 +68,49 @@ SectionEnd
 	FileClose $0
 	
 	AccessControl::GrantOnFile "$INSTDIR\resources" "(BU)" "FullAccess"
+
+	# Move dbchanges.txt to logged-in user's AppData\Roaming\havmor
+	# Only run this block if the source file actually exists, and only delete
+	# the source after a successful copy (so we never lose the file).
+	${Log} "[dbchanges] --- begin ---"
+	${Log} "[dbchanges] INSTDIR=$INSTDIR"
+	SetShellVarContext current
+	${Log} "[dbchanges] APPDATA (current ctx)=$APPDATA"
+	${If} ${FileExists} "$INSTDIR\resources\dbchanges.txt"
+		${Log} "[dbchanges] source EXISTS at $INSTDIR\resources\dbchanges.txt"
+		CreateDirectory "$APPDATA\havmor"
+		${If} ${FileExists} "$APPDATA\havmor\*.*"
+			${Log} "[dbchanges] target dir ready: $APPDATA\havmor"
+		${Else}
+			${Log} "[dbchanges] WARN target dir missing after CreateDirectory: $APPDATA\havmor"
+		${EndIf}
+		ClearErrors
+		CopyFiles /SILENT "$INSTDIR\resources\dbchanges.txt" "$APPDATA\havmor\dbchanges.txt"
+		${If} ${Errors}
+			${Log} "[dbchanges] ERROR CopyFiles set the error flag"
+		${EndIf}
+		${If} ${FileExists} "$APPDATA\havmor\dbchanges.txt"
+			${Log} "[dbchanges] copy verified at $APPDATA\havmor\dbchanges.txt"
+		${Else}
+			${Log} "[dbchanges] ERROR destination file NOT found after copy: $APPDATA\havmor\dbchanges.txt"
+		${EndIf}
+		${IfNot} ${Errors}
+		${AndIf} ${FileExists} "$APPDATA\havmor\dbchanges.txt"
+			Delete "$INSTDIR\resources\dbchanges.txt"
+			${If} ${FileExists} "$INSTDIR\resources\dbchanges.txt"
+				${Log} "[dbchanges] WARN source still exists after Delete"
+			${Else}
+				${Log} "[dbchanges] source removed from $INSTDIR\resources\"
+			${EndIf}
+		${Else}
+			${Log} "[dbchanges] source kept (copy failed or destination missing)"
+		${EndIf}
+		AccessControl::GrantOnFile "$APPDATA\havmor" "(BU)" "FullAccess"
+	${Else}
+		${Log} "[dbchanges] source NOT found at $INSTDIR\resources\dbchanges.txt - skipping"
+	${EndIf}
+	SetShellVarContext all
+	${Log} "[dbchanges] --- end ---"
 	
   
 !macroend
