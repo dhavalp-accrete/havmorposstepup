@@ -10,6 +10,7 @@ const fetch = require('node-fetch');
 //set environment to production
 process.env.NODE_ENV = 'production';
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
+process.env.EXE_VERSION = app.getVersion();
 
 
 let yourDbRootPath = app.getPath('userData');
